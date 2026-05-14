@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>2026 考研备考规划 - 地大计算机专硕</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  min-height: 100vh;
+  background: #080d14;
+  color: #e2e8f0;
+  font-family: PingFang SC, Microsoft YaHei, sans-serif;
+  padding-bottom: 60px;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="module">
+// 数据
+const weekdays = [
+  {
+    day: "周一至周五",
+    tag: "工作日",
+    tagColor: "#60a5fa",
+    hours: "约8h",
+    slots: [
+      { time: "7:00", label: "起床 + 洗漱", type: "life" },
+      { time: "7:20", label: "早饭（宿舍/食堂）", type: "life" },
+      { time: "7:40", label: "出发去教室（步行15分钟）", type: "life" },
+      { time: "7:55", label: "到教室，整理笔记，进入状态", type: "review" },
+      { time: "8:00", label: "数学二 — 武忠祥视频（第1组50分钟）", type: "math" },
+      { time: "8:50", label: "休息 10 分钟，站起来走走", type: "rest" },
+      { time: "9:00", label: "数学二 — 跟讲义做例题（第2组50分钟）", type: "math" },
+      { time: "9:50", label: "休息 10 分钟", type: "rest" },
+      { time: "10:00", label: "408 — 王道视频（第3组50分钟）", type: "cs" },
+      { time: "10:50", label: "休息 10 分钟", type: "rest" },
+      { time: "11:00", label: "英语二 — 精读阅读 / 长难句分析（30分钟）", type: "english" },
+      { time: "11:30", label: "出发吃午饭", type: "life" },
+      { time: "12:00", label: "午休（建议不超过30分钟小憩）", type: "life" },
+      { time: "14:00", label: "408 — 王道视频继续（第4组50分钟）", type: "cs" },
+      { time: "14:50", label: "休息 10 分钟", type: "rest" },
+      { time: "15:00", label: "408 — 章节配套练习题（第5组50分钟）", type: "cs" },
+      { time: "15:50", label: "休息 10 分钟", type: "rest" },
+      { time: "16:00", label: "英语二 — 背单词 红宝书+墨墨App（第6组50分钟）", type: "english" },
+      { time: "16:50", label: "整理今日笔记 / 标记错题", type: "review" },
+      { time: "17:20", label: "出发去食堂", type: "life" },
+      { time: "17:30", label: "晚饭 + 散步放松", type: "life" },
+      { time: "19:00", label: "数学二 — 复习今日内容 + 做3道题（第7组50分钟）", type: "math" },
+      { time: "19:50", label: "休息 10 分钟", type: "rest" },
+      { time: "20:00", label: "英语二 — 单词复习 + 新词30个（第8组50分钟）", type: "english" },
+      { time: "20:50", label: "错题本整理 + 写3行今日总结", type: "review" },
+      { time: "21:20", label: "洗澡 + 放松（音乐 / 散步）", type: "life" },
+      { time: "22:30", label: "睡觉（保证8小时）", type: "life" }
+    ]
+  },
+  {
+    day: "周六",
+    tag: "复习日",
+    tagColor: "#4ade80",
+    hours: "约5.5h",
+    slots: [
+      { time: "7:00", label: "起床 + 洗漱 + 早饭", type: "life" },
+      { time: "8:00", label: "数学二 — 本周错题重做 + 薄弱点复习（50分钟）", type: "math" },
+      { time: "8:50", label: "休息 10 分钟", type: "rest" },
+      { time: "9:00", label: "408 — 本周知识框架梳理 + 思维导图（50分钟）", type: "cs" },
+      { time: "9:50", label: "休息 10 分钟", type: "rest" },
+      { time: "10:00", label: "英语二 — 做一篇完整阅读真题（计时30分钟+分析20分钟）", type: "english" },
+      { time: "11:00", label: "自由学习：哪科最薄弱补哪科", type: "review" },
+      { time: "11:30", label: "午饭", type: "life" },
+      { time: "12:00", label: "午休放松（可适当延长）", type: "life" },
+      { time: "14:00", label: "数学二 — 做本周新章节练习题（50分钟）", type: "math" },
+      { time: "14:50", label: "休息", type: "rest" },
+      { time: "15:00", label: "英语二 — 作文练习 or 翻译训练（50分钟）", type: "english" },
+      { time: "16:00", label: "整理一周笔记 + 写周总结（3个收获+3个问题）", type: "review" },
+      { time: "17:00", label: "自由活动 / 运动", type: "life" },
+      { time: "17:30", label: "晚饭", type: "life" },
+      { time: "19:00", label: "轻松阅读 or 看考研相关视频", type: "english" },
+      { time: "20:00", label: "自由时间", type: "life" },
+      { time: "22:30", label: "睡觉", type: "life" }
+    ]
+  },
+  {
+    day: "周日",
+    tag: "恢复日",
+    tagColor: "#f87171",
+    hours: "约2.5h",
+    slots: [
+      { time: "7:00", label: "起床（可以赖床到7:30）", type: "life" },
+      { time: "7:30", label: "早饭 + 放松", type: "life" },
+      { time: "9:00", label: "英语单词轻松复习（不强迫，30分钟）", type: "english" },
+      { time: "9:30", label: "数学二 — 只看视频，不做题（50分钟）", type: "math" },
+      { time: "10:20", label: "自由活动（运动 / 社交 / 娱乐）", type: "life" },
+      { time: "11:30", label: "午饭", type: "life" },
+      { time: "12:00", label: "下午完全休息，充电为主", type: "life" },
+      { time: "17:30", label: "晚饭", type: "life" },
+      { time: "19:30", label: "预习明天内容（看一下明天要学的章节标题，10分钟即可）", type: "review" },
+      { time: "19:40", label: "完全放松，早点睡", type: "life" },
+      { time: "22:00", label: "睡觉（周日要睡够！）", type: "life" }
+    ]
+  }
+];
+
+const weekOverview = [
+  { day: "周一", math: 2.5, eng: 2, cs: 2, total: 6.5, type: "normal" },
+  { day: "周二", math: 2.5, eng: 2, cs: 2, total: 6.5, type: "normal" },
+  { day: "周三", math: 2.5, eng: 2, cs: 2, total: 6.5, type: "normal" },
+  { day: "周四", math: 2.5, eng: 2, cs: 2, total: 6.5, type: "normal" },
+  { day: "周五", math: 2.5, eng: 2, cs: 2, total: 6.5, type: "normal" },
+  { day: "周六", math: 1.5, eng: 1.5, cs: 1, total: 4, type: "review" },
+  { day: "周日", math: 0.8, eng: 0.5, cs: 0, total: 1.3, type: "rest" }
+];
+
+const phases = [
+  {
+    id: 1,
+    label: "第一阶段",
+    period: "5月中 — 7月底",
+    theme: "夯实基础",
+    color: "#4ade80",
+    bg: "#052e16",
+    weeks: "约11周",
+    desc: "从零唤醒记忆，建立各科知识框架，不追求速度，追求理解。",
+    subjects: [
+      {
+        name: "数学二",
+        icon: "∑",
+        daily: "2.5h",
+        tasks: [
+          "武忠祥高数基础班视频（全程跟讲义）",
+          "金榜时代讲义同步做，不跳过任何推导",
+          "线性代数：李永乐线代基础班视频",
+          "每周整理错题本，周末复盘薄弱点"
+        ]
+      },
+      {
+        name: "英语二",
+        icon: "A",
+        daily: "2h",
+        tasks: [
+          "红宝书词汇导入墨墨App，每天60个",
+          "朱伟恋恋有词配合视频记忆词根",
+          "每天精读1篇阅读（2010年前老卷）",
+          "分析长难句结构，积累写作词组"
+        ]
+      },
+      {
+        name: "408",
+        icon: "⌨",
+        daily: "2h",
+        tasks: [
+          "数据结构：王道视频逐章学习",
+          "王道教材同步阅读，画知识框架图",
+          "组成原理：王道视频跟上",
+          "C语言指针/结构体遇到不懂随时补，无需系统重学"
+        ]
+      }
+    ],
+    warning: "基础阶段绝对不要刷真题！视频吃透再做题。"
+  },
+  {
+    id: 2,
+    label: "第二阶段",
+    period: "8月 — 10月底",
+    theme: "强化提升",
+    color: "#60a5fa",
+    bg: "#0c1a3a",
+    weeks: "约13周",
+    desc: "系统刷题，查漏补缺，开始做真题，强化薄弱点。",
+    subjects: [
+      {
+        name: "数学二",
+        icon: "∑",
+        daily: "3h",
+        tasks: [
+          "武忠祥强化班视频（核心！认真听每一讲）",
+          "660题 + 武忠祥过关660专项刷",
+          "概率论：浙大版教材 + 武忠祥视频",
+          "每两周做一套近5年真题（限时3小时）"
+        ]
+      },
+      {
+        name: "英语二",
+        icon: "A",
+        daily: "2h",
+        tasks: [
+          "刷近10年真题阅读（精读+逐句分析）",
+          "作文模板积累：大作文+小作文各5套",
+          "每天坚持单词不断",
+          "翻译专项训练（唐静翻译课）"
+        ]
+      },
+      {
+        name: "408",
+        icon: "⌨",
+        daily: "2.5h",
+        tasks: [
+          "操作系统：王道视频全部看完",
+          "计算机网络：王道视频全部看完",
+          "王道四科习题册按章节刷题",
+          "整理高频考点，思维导图串联知识"
+        ]
+      }
+    ],
+    warning: "第一次做真题不要看答案！先独立完成，再复盘分析错因。"
+  },
+  {
+    id: 3,
+    label: "第三阶段",
+    period: "11月 — 12月中",
+    theme: "冲刺模拟",
+    color: "#f87171",
+    bg: "#2d0707",
+    weeks: "约7周",
+    desc: "全真模拟，查缺补漏，反复巩固高频考点，调整心态。",
+    subjects: [
+      {
+        name: "数学二",
+        icon: "∑",
+        daily: "3h",
+        tasks: [
+          "每周做1套完整模拟卷（限时3小时）",
+          "李林四套卷、合工大超越卷必做",
+          "武忠祥押题班视频（12月出，必看）",
+          "考前一周只看错题本"
+        ]
+      },
+      {
+        name: "英语二",
+        icon: "A",
+        daily: "1.5h",
+        tasks: [
+          "完整真题套卷限时练习",
+          "手写作文，背诵改写为自己的语言",
+          "保持单词复习防止遗忘",
+          "翻译每天1篇保持手感"
+        ]
+      },
+      {
+        name: "408",
+        icon: "⌨",
+        daily: "2.5h",
+        tasks: [
+          "王道模拟卷+历年真题全部完成",
+          "重点攻克：树/图算法、存储管理大题",
+          "整理408公式表、协议表随时翻看",
+          "考前反复看错题本和自己笔记"
+        ]
+      }
+    ],
+    warning: "考前两周禁止学新知识！只复习已掌握内容。"
+  }
+];
+
+const colors = {
+  math: { bg: "rgba(74,222,128,0.1)", border: "#4ade80", text: "#4ade80", label: "数学二" },
+  english: { bg: "rgba(96,165,250,0.1)", border: "#60a5fa", text: "#60a5fa", label: "英语二" },
+  cs: { bg: "rgba(251,191,36,0.1)", border: "#fbbf24", text: "#fbbf24", label: "408" },
+  review: { bg: "rgba(192,132,252,0.1)", border: "#c084fc", text: "#c084fc", label: "复习" },
+  rest: { bg: "rgba(148,163,184,0.06)", border: "#475569", text: "#94a3b8", label: "休息" },
+  life: { bg: "rgba(148,163,184,0.03)", border: "#1e293b", text: "#64748b", label: "生活" }
+};
+
+// 全局状态
+let tab = "schedule";
+let dayIdx = 0;
+let openPhase = 1;
+const barMax = 3;
+const barW = h => Math.min(100, (h / barMax) * 100);
+
+// 渲染入口
+function render() {
+  const root = document.getElementById("root");
+  const dayData = weekdays[dayIdx];
+
+  let html = `
+  <div style="min-height:100vh;background:#080d14;color:#e2e8f0;font-family:PingFang SC,Microsoft YaHei,sans-serif;padding-bottom:60px">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0f1e35,#0a1628);border-bottom:1px solid #1e3a5f;padding:24px 20px 18px;text-align:center">
+      <div style="font-size:10;letter-spacing:4;color:#60a5fa;margin-bottom:6">中国地质大学(北京) · 计算机专硕</div>
+      <h1 style="font-size:22;font-weight:800;margin:0 0 5px;color:#f0f6ff">2026 考研备考规划</h1>
+      <div style="font-size:12;color:#94a3b8">数学二 · 英语二 · 408 | 距考试约 <span style="color:#fbbf24;font-weight:700">7个月</span></div>
+      <div style="display:flex;justify-content:center;gap:12;margin-top:14;flex-wrap:wrap">
+        ${[["平日8h","每日学习","#4ade80"],["5+1+1","工作/复习/恢复","#60a5fa"],["武忠祥+王道","核心资料","#fbbf24"]].map(([v,l,c])=>`
+        <div style="background:rgba(255,255,255,0.04);border:1px solid #1e3a5f;border-radius:10;padding:7px 14px;text-align:center">
+          <div style="font-size:14;font-weight:800;color:${c}">${v}</div>
+          <div style="font-size:10;color:#64748b;margin-top:1">${l}</div>
+        </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid #1e293b;background:#0a111d">
+      ${[["schedule","每日作息"],["week","周计划"],["plan","总体规划"]].map(([k,l])=>`
+      <button onclick="switchTab('${k}')" style="flex:1;padding:12px 4px;background:none;border:none;border-bottom:${tab===k?'2px solid #60a5fa':'2px solid transparent'};color:${tab===k?'#60a5fa':'#64748b'};font-size:12;font-weight:${tab===k?700:400};cursor:pointer;font-family:inherit">${l}</button>
+      `).join('')}
+    </div>
+  `;
+
+  // 每日作息
+  if(tab === "schedule") {
+    html += `
+    <div style="padding:16px 14px">
+      <div style="display:flex;gap:8;margin-bottom:16">
+        ${weekdays.map((d,i)=>{
+          const active = dayIdx === i;
+          const bc = i===0?"#1e3a5f":i===1?"#1a3a1e":"#3a1a1a";
+          const tc = i===0?"#60a5fa":i===1?"#4ade80":"#f87171";
+          return `
+          <button onclick="switchDay(${i})" style="flex:1;padding:9px 4px;border-radius:10;border:none;cursor:pointer;font-family:inherit;background:${active?bc:"#0e1824"};color:${active?tc:"#475569"};font-weight:${active?700:400};font-size:12;border-bottom:${active?`2px solid ${tc}`:"2px solid transparent"}">
+            <div style="font-size:11">${d.day}</div>
+            <div style="font-size:10;margin-top:2;opacity:0.7">${d.tag}</div>
+          </button>
+          `;
+        }).join('')}
+      </div>
+
+      <div style="background:linear-gradient(135deg,#0c1f35,#0a1628);border:1px solid #1e3a5f;border-radius:12;padding:12px 15px;margin-bottom:14">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:15;font-weight:700;color:#f0f6ff">${dayData.day}</div>
+            <div style="font-size:11;color:#64748b;margin-top:2">
+              ${dayIdx===0?"工作日 · 7:00起床 · 步行15分钟到教室":dayIdx===1?"复习日 · 较轻松 · 总结本周内容":"恢复日 · 以休息为主 · 少量轻松学习"}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18;font-weight:800;color:#4ade80">${dayData.hours}</div>
+            <div style="font-size:10;color:#64748b">有效学习</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:5;margin-bottom:12">
+        ${Object.entries(colors).map(([k,v])=>`
+        <span style="font-size:10;padding:2px 8px;border-radius:20;border:1px solid ${v.border};color:${v.text};background:${v.bg}">${v.label}</span>
+        `).join('')}
+      </div>
+
+      <div style="position:relative">
+        <div style="position:absolute;left:48;top:0;bottom:0;width:1;background:linear-gradient(to bottom,#1e3a5f,transparent)"></div>
+        ${dayData.slots.map(slot=>{
+          const c = colors[slot.type];
+          return `
+          <div style="display:flex;gap:8;margin-bottom:7;position:relative">
+            <div style="width:44;flex-shrink:0;text-align:right;padding-top:10;font-size:11;color:#475569">${slot.time}</div>
+            <div style="width:10;height:10;border-radius:50%;background:${c.border};flex-shrink:0;margin-top:13;z-index:1;box-shadow:0 0 6px ${c.border}66"></div>
+            <div style="flex:1;background:${c.bg};border:1px solid ${c.border}33;border-radius:8;padding:8px 11px">
+              <div style="font-size:9;color:${c.text};margin-bottom:1;font-weight:600;letter-spacing:1">${c.label}</div>
+              <div style="font-size:13;color:#e2e8f0;line-height:1.5">${slot.label}</div>
+            </div>
+          </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+    `;
+  }
+
+  // 周计划
+  if(tab === "week") {
+    html += `
+    <div style="padding:16px 14px">
+      <div style="background:#0e1824;border:1px solid #1e3a5f;border-radius:12;padding:14px;margin-bottom:16">
+        <div style="font-size:12;color:#60a5fa;font-weight:700;margin-bottom:10">每周学习时长分布</div>
+        ${weekOverview.map(d=>{
+          const typeColor = d.type==="normal"?"#60a5fa":d.type==="review"?"#4ade80":"#f87171";
+          return `
+          <div style="margin-bottom:10">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4">
+              <span style="font-size:12;color:${d.type==="rest"?"#f87171":d.type==="review"?"#4ade80":"#e2e8f0"};font-weight:${d.type!=="normal"?700:400}">${d.day}</span>
+              <span style="font-size:12;color:${typeColor};font-weight:700">${d.total}h</span>
+            </div>
+            <div style="display:flex;gap:2;height:6;border-radius:3;overflow:hidden;background:#0a1628">
+              <div style="width:${barW(d.math)}%;background:#4ade80;border-radius:3px 0 0 3px"></div>
+              <div style="width:${barW(d.eng)}%;background:#60a5fa"></div>
+              <div style="width:${barW(d.cs)}%;background:#fbbf24;border-radius:0 3px 3px 0"></div>
+            </div>
+          </div>
+          `;
+        }).join('')}
+        <div style="display:flex;gap:14;margin-top:10">
+          ${[["#4ade80","数学二"],["#60a5fa","英语二"],["#fbbf24","408"]].map(([c,l])=>`
+          <div style="display:flex;align-items:center;gap:4">
+            <div style="width:8;height:8;border-radius:2;background:${c}"></div>
+            <span style="font-size:10;color:#64748b">${l}</span>
+          </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div style="font-size:12;color:#64748b;margin-bottom:12">每周合理安排 — 点击查看详情</div>
+      ${[
+        { label:"周一至周五 · 工作日", color:"#60a5fa", bg:"#0c1a3a", total:"约8h/天 × 5天 = 40h", rules:[
+          "每节课50分钟 + 休息10分钟，不强行连续学习",
+          "上午主攻数学（脑力最好时段）",
+          "下午主攻408（内容多，需要长时间）",
+          "晚上轻量复习+英语单词，不上新内容",
+          "早上7:40到教室，步行当作热身"
+        ]},
+        { label:"周六 · 复习日", color:"#4ade80", bg:"#052e16", total:"约5.5h", rules:[
+          "不学新内容，只复习本周所学",
+          "重做错题，查找薄弱点",
+          "做一篇完整英语阅读真题（计时）",
+          "写周总结：3个收获 + 3个待解决问题",
+          "下午可以自由安排，运动/社交都行"
+        ]},
+        { label:"周日 · 恢复日", color:"#f87171", bg:"#2d0707", total:"约2.5h（轻量）", rules:[
+          "以休息为主，不强迫自己完成目标",
+          "只做轻松的事：看视频、背背单词",
+          "运动优先！跑步、散步都行",
+          "晚上10分钟预习明天章节标题即可",
+          "早睡，为下周蓄力"
+        ]},
+        { label:"每月节奏", color:"#c084fc", bg:"#1a0a2d", total:"约195h/月", rules:[
+          "第1-2周：正常推进新内容",
+          "第3周：冲刺周，可适当加量",
+          "第4周：复盘周，以整理笔记为主",
+          "每月末做一次月度总结：哪科进步了？哪科还差？",
+          "每月给自己一个完整休息日（旅游/聚会都行）"
+        ]}
+      ].map(block=>`
+      <div style="background:${block.bg};border:1px solid ${block.color}44;border-radius:12;padding:14px;margin-bottom:10">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10">
+          <span style="font-size:13;font-weight:700;color:${block.color}">${block.label}</span>
+          <span style="font-size:11;color:${block.color};background:${block.color}22;padding:2px 8px;border-radius:20;border:1px solid ${block.color}44">${block.total}</span>
+        </div>
+        ${block.rules.map(r=>`
+        <div style="display:flex;gap:6;margin-bottom:6">
+          <span style="color:${block.color};flex-shrink:0;font-size:13">›</span>
+          <span style="font-size:13;color:#94a3b8;line-height:1.6">${r}</span>
+        </div>
+        `).join('')}
+      </div>
+      `).join('')}
+    </div>
+    `;
+  }
+
+  // 总体规划
+  if(tab === "plan") {
+    html += `
+    <div style="padding:16px 14px">
+      <p style="font-size:12;color:#64748b;margin-bottom:12;line-height:1.7">
+        共 <span style="color:#f0f6ff">3个阶段</span>，点击展开
+      </p>
+      ${phases.map(phase=>`
+      <div style="margin-bottom:10">
+        <button onclick="togglePhase(${phase.id})" style="width:100%;background:${openPhase===phase.id?phase.bg:"#0e1824"};border:1px solid ${openPhase===phase.id?phase.color:"#1e293b"};border-radius:${openPhase===phase.id?"12px 12px 0 0":"12px"};padding:13px 14px;cursor:pointer;text-align:left;font-family:inherit">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:10;color:${phase.color};letter-spacing:1;font-weight:700">${phase.label} · ${phase.period}</div>
+              <div style="font-size:16;font-weight:800;color:#f0f6ff;margin-top:2">${phase.theme}</div>
+            </div>
+            <div style="color:${phase.color};font-size:12;flex-shrink:0">${openPhase===phase.id?"▲":"▼"}</div>
+          </div>
+          <div style="font-size:11;color:#64748b;margin-top:3">${phase.weeks} · ${phase.desc}</div>
+        </button>
+        ${openPhase===phase.id?`
+        <div style="background:${phase.bg};border:1px solid ${phase.color};border-top:none;border-radius:0 0 12px 12px;padding:0 13px 13px">
+          ${phase.subjects.map(sub=>`
+          <div style="background:rgba(0,0,0,0.3);border-radius:9;padding:10px 12px;margin-top:10;border-left:3px solid ${phase.color}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6">
+              <span style="font-size:14;font-weight:700;color:#e2e8f0">${sub.icon} ${sub.name}</span>
+              <span style="font-size:11;color:${phase.color};background:${phase.color}22;padding:2px 8px;border-radius:20;border:1px solid ${phase.color}44">每日 ${sub.daily}</span>
+            </div>
+            <ul style="margin:0;padding-left:14">
+              ${sub.tasks.map(t=>`<li style="font-size:12;color:#94a3b8;margin-bottom:4;line-height:1.6">${t}</li>`).join('')}
+            </ul>
+          </div>
+          `).join('')}
+          <div style="margin-top:10;padding:8px 11px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:8;font-size:12;color:#fbbf24">
+            ⚠ ${phase.warning}
+          </div>
+        </div>
+        `:''}
+      </div>
+      `).join('')}
+
+      <div style="background:linear-gradient(135deg,#0f2d1a,#061810);border:1px solid #4ade8055;border-radius:12;padding:16px;text-align:center;margin-top:6">
+        <div style="font-size:20;margin-bottom:6">💪</div>
+        <div style="font-size:13;color:#4ade80;font-weight:700;margin-bottom:4">凡事皆有可能，坚持就是胜利</div>
+        <div style="font-size:11;color:#64748b;line-height:1.8">
+          高数学过+高中数学扎实，是最理想的起点之一。武忠祥基础班对你来说是"唤醒"而非"从零"，进度会比你想象的快！
+        </div>
+      </div>
+    </div>
+    `;
+  }
+
+  html += `</div>`;
+  root.innerHTML = html;
+}
+
+// 全局方法
+window.switchTab = function(k) {
+  tab = k;
+  render();
+};
+window.switchDay = function(i) {
+  dayIdx = i;
+  render();
+};
+window.togglePhase = function(id) {
+  openPhase = openPhase === id ? null : id;
+  render();
+};
+
+// 初始渲染
+render();
+</script>
+</body>
+</html>
